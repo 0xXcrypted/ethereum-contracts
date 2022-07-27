@@ -1,0 +1,36 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "SafeTransfer",
+  "sourceName": "contracts/TokenLaunch/SafeTransfer.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "TokensWithdrawn",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220478612f37c5a3bd14337bc8d5d4b79a95b0177157a1c057975101c3d547ce2dd64736f6c63430008010033",
+  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220478612f37c5a3bd14337bc8d5d4b79a95b0177157a1c057975101c3d547ce2dd64736f6c63430008010033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

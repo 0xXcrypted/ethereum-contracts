@@ -1,0 +1,15 @@
+{
+	"attributes": [
+		{
+			"trait_type": "Energy Charged",
+			"value": "95%"
+		},
+		{
+			"trait_type": "MK",
+			"value": "MK1"
+		}
+	],
+	"description": "Proof that Iron Man has heart",
+	"image": "ipfs://Qmd4D5bMQrEwfMKNUdbjWJweDENZSjkuwVd6PocnjkUjcm",
+	"name": "mk1"
+}

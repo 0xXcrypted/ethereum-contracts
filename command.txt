@@ -1,0 +1,7 @@
+npx hardhat verify --network kovan DEPLOYED_CONTRACT_ADDRESS ""
+
+npx hardhat compile
+
+npx hardhat run scripts/deploy.js 
+
+npx hardhat verify --network kovan '0x14711C30Cf55B6075e739f3135f52dE531836a83' '0x5b1AB6A09297C57911D1971537F569143a601B93'
