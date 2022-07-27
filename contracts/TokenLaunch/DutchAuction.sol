@@ -160,7 +160,6 @@ contract DutchAuction is ReentrancyGuard, Ownable  {
      */
     function clearingPrice() public view returns (uint256) {
 
-        /// @dev If auction successful, return tokenPrice
         uint256 _tokenPrice = tokenPrice();
         uint256 _currentPrice = priceFunction();
         return _tokenPrice > _currentPrice ? _tokenPrice : _currentPrice;
@@ -206,7 +205,6 @@ contract DutchAuction is ReentrancyGuard, Ownable  {
         // Get ETH able to be committed
         uint256 ethToTransfer = calculateCommitment(msg.value);
 
-        /// @notice Accept ETH Payments.
         uint256 ethToRefund = msg.value.sub(ethToTransfer);
         if (ethToTransfer > 0) {
             _addCommitment(_beneficiary, ethToTransfer);
@@ -416,7 +414,7 @@ contract DutchAuction is ReentrancyGuard, Ownable  {
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
-            _safeTransferFrom(paymentCurrency, address(this), wallet, marketStatus.commitmentsTotal);
+            _safeTransferFrom(paymentCurrency, address(this), wallet, status.commitmentsTotal);
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
@@ -440,7 +438,6 @@ contract DutchAuction is ReentrancyGuard, Ownable  {
     function withdrawTokens(address payable beneficiary) public   nonReentrant  {
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "DutchAuction: not finalized");
-            /// @dev Successful auction! Transfer claimed tokens.
             uint256 tokensToClaim = tokensClaimable(beneficiary);
             require(tokensToClaim > 0, "DutchAuction: No tokens to claim"); 
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);

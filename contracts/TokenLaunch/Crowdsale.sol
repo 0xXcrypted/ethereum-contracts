@@ -13,10 +13,8 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract Crowdsale is ReentrancyGuard, Ownable {
     using SafeMath for uint256;
 
-    /// @notice The placeholder ETH address.
     address private constant ETH_ADDRESS = 0x0000000000000000000000000000000000000000;
 
-    /// @notice The decimals of the auction token.
     uint256 private constant AUCTION_TOKEN_DECIMAL_PLACES = 18;
     uint256 private constant AUCTION_TOKEN_DECIMALS = 10 ** AUCTION_TOKEN_DECIMAL_PLACES;
 
@@ -189,21 +187,17 @@ contract Crowdsale is ReentrancyGuard, Ownable {
             revertBecauseUserDidNotProvideAgreement();
         }
 
-        /// @dev Get ETH able to be committed.
         uint256 ethToTransfer = calculateCommitment(msg.value);
 
-        /// @dev Accept ETH Payments.
         uint256 ethToRefund = msg.value.sub(ethToTransfer);
         if (ethToTransfer > 0) {
             _addCommitment(_beneficiary, ethToTransfer);
         }
 
-        /// @dev Return any ETH to be refunded.
         if (ethToRefund > 0) {
             _beneficiary.transfer(ethToRefund);
         }
 
-        /// @notice Revert if commitmentsTotal exceeds the balance
         require(marketStatus.commitmentsTotal <= address(this).balance, "CrowdSale: The committed ETH exceeds the balance");
     }
 
@@ -273,7 +267,6 @@ contract Crowdsale is ReentrancyGuard, Ownable {
 
         commitments[_addr] = newCommitment;
 
-        /// @dev Update state.
         marketStatus.commitmentsTotal = uint256(marketStatus.commitmentsTotal).add(_commitment);
 
         emit AddedCommitment(_addr, _commitment);
@@ -291,15 +284,12 @@ contract Crowdsale is ReentrancyGuard, Ownable {
     function withdrawTokens(address payable beneficiary) public   nonReentrant  {    
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "Crowdsale: not finalized");
-            /// @dev Successful auction! Transfer claimed tokens.
             uint256 tokensToClaim = tokensClaimable(beneficiary);
             require(tokensToClaim > 0, "Crowdsale: no tokens to claim"); 
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
             // _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);            
             _safeTransferFrom(auctionToken, address(this), beneficiary, tokensClaimable(beneficiary));
         } else {
-            /// @dev Auction did not meet reserve price.
-            /// @dev Return committed funds back to user.
             require(block.timestamp > uint256(marketInfo.endTime), "Crowdsale: auction has not finished yet");
             uint256 accountBalance = commitments[beneficiary];
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
@@ -346,18 +336,13 @@ contract Crowdsale is ReentrancyGuard, Ownable {
         require(auctionEnded(), "Crowdsale: Has not finished yet"); 
 
         if (auctionSuccessful()) {
-            /// @dev Successful auction
-            /// @dev Transfer contributed tokens to wallet.
             _safeTransferFrom(paymentCurrency, address(this),wallet, uint256(status.commitmentsTotal));
-            /// @dev Transfer unsold tokens to wallet.
             uint256 soldTokens = _getTokenAmount(uint256(status.commitmentsTotal));
             uint256 unsoldTokens = uint256(info.totalTokens).sub(soldTokens);
             if(unsoldTokens > 0) {
                 _safeTransferFrom(auctionToken, address(this), wallet, unsoldTokens);
             }
         } else {
-            /// @dev Failed auction
-            /// @dev Return auction tokens back to wallet.
             _safeTransferFrom(auctionToken,address(this), wallet, uint256(info.totalTokens));
         }
 

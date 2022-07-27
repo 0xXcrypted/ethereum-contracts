@@ -91,8 +91,6 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
      * @param _endTime Auction end time
      * @param _factor Inflection point of the auction
      * @param _minimumPrice The minimum auction price
-     * @param _admin Address that can finalize auction.
-     * @param _pointList Address that will manage auction approvals.
      * @param _wallet Address where collected funds will be forwarded to
      */
     function initAuction(
@@ -104,8 +102,6 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
         address _paymentCurrency,
         uint256 _factor,
         uint256 _minimumPrice,
-        address _admin,
-        address _pointList,
         address payable _wallet
     ) public {
         require(_endTime < 10000000000, "HyperbolicAuction: enter an unix timestamp in seconds, not miliseconds");
@@ -114,11 +110,10 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
         require(_endTime > _startTime, "HyperbolicAuction: end time must be older than start time");
         require(_minimumPrice > 0, "HyperbolicAuction: minimum price must be greater than 0"); 
         require(_wallet != address(0), "HyperbolicAuction: wallet is the zero address");
-        require(_admin != address(0), "HyperbolicAuction: admin is the zero address");
         require(_token != address(0), "HyperbolicAuction: token is the zero address");
-        require(IERC20(_token).decimals() == 18, "HyperbolicAuction: Token does not have 18 decimals");
+        require(ERC20(_token).decimals() == 18, "HyperbolicAuction: Token does not have 18 decimals");
         if (_paymentCurrency != ETH_ADDRESS) {
-            require(IERC20(_paymentCurrency).decimals() > 0, "HyperbolicAuction: Payment currency is not ERC20");
+            require(ERC20(_paymentCurrency).decimals() > 0, "HyperbolicAuction: Payment currency is not ERC20");
         }
 
         marketInfo.startTime =(_startTime);
@@ -141,11 +136,11 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
         uint256 _alpha = _duration.mul(_minimumPrice);
         marketPrice.alpha =(_alpha);
 
-        _safeTransferFrom(_token, _funder, _totalTokens);
+        _safeTransferFrom(_token, _funder, address(this), _totalTokens);
 
-        emit AuctionDeployed(_funder, _token, _totalTokens, _paymentCurrency, _admin, _wallet);
-        emit AuctionTimeUpdated(_startTime, _endTime);
-        emit AuctionPriceUpdated(_minimumPrice);
+        // emit AuctionDeployed(_funder, _token, _totalTokens, _paymentCurrency, _admin, _wallet);
+        // emit AuctionTimeUpdated(_startTime, _endTime);
+        // emit AuctionPriceUpdated(_minimumPrice);
     }
 
 
@@ -169,7 +164,7 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
     function priceFunction() public view returns (uint256) {
         /// @dev Return Auction Price
         if (block.timestamp <= uint256(marketInfo.startTime)) {
-            return uint256(-1);
+            return type(uint256).max;
         }
         if (block.timestamp >= uint256(marketInfo.endTime)) {
             return uint256(marketPrice.minimumPrice);
@@ -239,7 +234,6 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
         require(msg.value > 0, "HyperbolicAuction: Value must be higher than 0");
         uint256 ethToTransfer = calculateCommitment(msg.value);
 
-        /// @notice Accept ETH Payments.
         uint256 ethToRefund = msg.value.sub(ethToTransfer);
         if (ethToTransfer > 0) {
             _addCommitment(_beneficiary, ethToTransfer);
@@ -275,7 +269,7 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
         }
         uint256 tokensToTransfer = calculateCommitment(_amount);
         if (tokensToTransfer > 0) {
-            _safeTransferFrom(paymentCurrency, msg.sender, tokensToTransfer);
+            _safeTransferFrom(paymentCurrency, msg.sender, address(this), tokensToTransfer);
             _addCommitment(_from, tokensToTransfer);
         }
     }
@@ -313,9 +307,9 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
         require(!status.finalized, "HyperbolicAuction: auction already finalized");
 
         uint256 newCommitment = commitments[_addr].add(_commitment);
-        if (status.usePointList) {
-            require(IPointList(pointList).hasPoints(_addr, newCommitment));
-        }
+        // if (status.usePointList) {
+        //     require(IPointList(pointList).hasPoints(_addr, newCommitment));
+        // }
 
         commitments[_addr] = newCommitment;
         status.commitmentsTotal =(uint256(status.commitmentsTotal).add(_commitment));
@@ -362,11 +356,13 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
      * @dev Transfer contract funds to initialized wallet.
      */
     function finalize()
-        public   nonReentrant 
+        public   nonReentrant onlyOwner
     {
-        require(hasAdminRole(msg.sender) 
-                || wallet == msg.sender
-                || hasSmartContractRole(msg.sender) 
+        require(
+            // hasAdminRole(msg.sender) 
+            //     || 
+                wallet == msg.sender
+                // || hasSmartContractRole(msg.sender) 
                 || finalizeTimeExpired(), "HyperbolicAuction: sender must be an admin");
         MarketStatus storage status = marketStatus;
         MarketInfo storage info = marketInfo;
@@ -376,12 +372,14 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
-            _safeTokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
+            // _safeTokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
+            _safeTransferFrom(paymentCurrency, address(this), wallet, status.commitmentsTotal);
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
             require(block.timestamp > uint256(info.endTime), "HyperbolicAuction: auction has not finished yet"); 
-            _safeTokenPayment(auctionToken, wallet, uint256(info.totalTokens));
+            // _safeTokenPayment(auctionToken, wallet, uint256(info.totalTokens));
+            _safeTransferFrom(auctionToken, address(this), wallet, info.totalTokens);
         }
         status.finalized = true;
         emit AuctionFinalized();
@@ -391,14 +389,15 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
      * @notice Cancel Auction
      * @dev Admin can cancel the auction before it starts
      */
-    function cancelAuction() public   nonReentrant  
+    function cancelAuction() public   nonReentrant  onlyOwner
     {
-        require(hasAdminRole(msg.sender));
+        // require(hasAdminRole(msg.sender));
         MarketStatus storage status = marketStatus;
         require(!status.finalized, "HyperbolicAuction: auction already finalized");
         require( uint256(status.commitmentsTotal) == 0, "HyperbolicAuction: auction already committed" );
 
-        _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+        // _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+        _safeTransferFrom(auctionToken, address(this), wallet, marketInfo.totalTokens);
 
         status.finalized = true;
         emit AuctionCancelled();
@@ -421,10 +420,10 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
     }
 
 
-   /// @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
-    function withdrawTokens() public  {
-        withdrawTokens(msg.sender);
-    }
+//    /// @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
+//     function withdrawTokens() public  {
+//         withdrawTokens(msg.sender);
+//     }
 
     /// @notice Withdraw your tokens once the Auction has ended.
     function withdrawTokens(address payable beneficiary) 
@@ -432,19 +431,20 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
     {
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "HyperbolicAuction: not finalized");
-            /// @dev Successful auction! Transfer claimed tokens.
             uint256 tokensToClaim = tokensClaimable(beneficiary);
             require(tokensToClaim > 0, "HyperbolicAuction: no tokens to claim"); 
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
 
-            _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
+            // _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
+            _safeTransferFrom(auctionToken, address(this), beneficiary, tokensToClaim);
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
             require(block.timestamp > uint256(marketInfo.endTime), "HyperbolicAuction: auction has not finished yet");
             uint256 fundsCommitted = commitments[beneficiary];
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
-            _safeTokenPayment(paymentCurrency, beneficiary, fundsCommitted);
+            // _safeTokenPayment(paymentCurrency, beneficiary, fundsCommitted);
+            _safeTransferFrom(paymentCurrency, address(this), beneficiary, fundsCommitted);
         }
     }
 
@@ -507,8 +507,8 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
      * @param _startTime Auction start time.
      * @param _endTime Auction end time.
      */
-    function setAuctionTime(uint256 _startTime, uint256 _endTime) external {
-        require(hasAdminRole(msg.sender));
+    function setAuctionTime(uint256 _startTime, uint256 _endTime) external onlyOwner{
+        // require(hasAdminRole(msg.sender));
         require(_startTime < 10000000000, "HyperbolicAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_endTime < 10000000000, "HyperbolicAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "HyperbolicAuction: start time is before current time");
@@ -529,8 +529,8 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
      * @notice Admin can set start and min price through this function.
      * @param _minimumPrice Auction minimum price.
      */
-    function setAuctionPrice( uint256 _minimumPrice) external {
-        require(hasAdminRole(msg.sender));
+    function setAuctionPrice( uint256 _minimumPrice) external onlyOwner{
+        // require(hasAdminRole(msg.sender));
         require(_minimumPrice > 0, "HyperbolicAuction: minimum price must be greater than 0"); 
         require(marketStatus.commitmentsTotal == 0, "HyperbolicAuction: auction cannot have already started");
 
@@ -547,8 +547,8 @@ contract HyperbolicAuction is  ReentrancyGuard, Ownable  {
      * @notice Admin can set the auction wallet through this function.
      * @param _wallet Auction wallet is where funds will be sent.
      */
-    function setAuctionWallet(address payable _wallet) external {
-        require(hasAdminRole(msg.sender));
+    function setAuctionWallet(address payable _wallet) external onlyOwner{
+        // require(hasAdminRole(msg.sender));
         require(_wallet != address(0), "HyperbolicAuction: wallet is the zero address");
 
         wallet = _wallet;

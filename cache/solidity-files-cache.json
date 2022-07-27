@@ -3451,8 +3451,8 @@
       ]
     },
     "/Users/jomingyu/Dev/Solidity/ethereum-contracts/contracts/TokenLaunch/BatchAuction.sol": {
-      "lastModificationDate": 1658892919796,
-      "contentHash": "3cff3db24b152bd0f3b5b88ce1889b22",
+      "lastModificationDate": 1658902689603,
+      "contentHash": "c0ae18e50bbfc3e6908dfd8c600abc8d",
       "sourceName": "contracts/TokenLaunch/BatchAuction.sol",
       "solcConfig": {
         "version": "0.8.1",
@@ -3492,8 +3492,8 @@
       ]
     },
     "/Users/jomingyu/Dev/Solidity/ethereum-contracts/contracts/TokenLaunch/Crowdsale.sol": {
-      "lastModificationDate": 1658896030024,
-      "contentHash": "d41d8cd98f00b204e9800998ecf8427e",
+      "lastModificationDate": 1658907726818,
+      "contentHash": "7a00c51c532ff0f90db3543d52dd597d",
       "sourceName": "contracts/TokenLaunch/Crowdsale.sol",
       "solcConfig": {
         "version": "0.8.1",
@@ -3518,13 +3518,23 @@
           }
         }
       },
-      "imports": [],
-      "versionPragmas": [],
-      "artifacts": []
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Crowdsale"
+      ]
     },
     "/Users/jomingyu/Dev/Solidity/ethereum-contracts/contracts/TokenLaunch/DutchAuction.sol": {
-      "lastModificationDate": 1658889708286,
-      "contentHash": "d41d8cd98f00b204e9800998ecf8427e",
+      "lastModificationDate": 1658907500203,
+      "contentHash": "f42906d0ae1500d976be3d65d5160037",
       "sourceName": "contracts/TokenLaunch/DutchAuction.sol",
       "solcConfig": {
         "version": "0.8.1",
@@ -3549,13 +3559,23 @@
           }
         }
       },
-      "imports": [],
-      "versionPragmas": [],
-      "artifacts": []
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "DutchAuction"
+      ]
     },
     "/Users/jomingyu/Dev/Solidity/ethereum-contracts/contracts/TokenLaunch/HyperbolicAuction.sol": {
-      "lastModificationDate": 1658889717961,
-      "contentHash": "d41d8cd98f00b204e9800998ecf8427e",
+      "lastModificationDate": 1658907702517,
+      "contentHash": "f3d734dd0482cda256e7e114d76d23cf",
       "sourceName": "contracts/TokenLaunch/HyperbolicAuction.sol",
       "solcConfig": {
         "version": "0.8.1",
@@ -3580,9 +3600,19 @@
           }
         }
       },
-      "imports": [],
-      "versionPragmas": [],
-      "artifacts": []
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "HyperbolicAuction"
+      ]
     },
     "/Users/jomingyu/Dev/Solidity/ethereum-contracts/contracts/TokenLaunch/SafeTransfer.sol": {
       "lastModificationDate": 1658893097835,
