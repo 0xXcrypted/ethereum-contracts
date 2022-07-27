@@ -35,19 +35,6 @@ contract BatchAuction is ReentrancyGuard, Ownable {
         bool usePointList;
     }
 
-    // struct AuctionInfo {
-    //     address auctionToken;
-    //     uint256 auctionTokenTotal;
-    //     address paymentToken;
-    //     uint256 paymentTokenTotal;
-    //     uint256 startTime;
-    //     uint256 endTime;
-    //     uint256 minimumPaymentAmount;
-    //     uint256 maximumPaymentAmount;
-    //     uint256 auctionTokenPrice;
-    //     bool finalized;
-    // }
-
     MarketStatus public marketStatus;
 
     address public auctionToken;
@@ -86,7 +73,6 @@ contract BatchAuction is ReentrancyGuard, Ownable {
      * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address. : KLAY
      * @param _minimumCommitmentAmount Minimum amount collected at which the auction will be successful.
      * @param _maximumCommitmentAmount Maximum amount collected at which the auction will be successful.
-     * @param _admin Address that can finalize auction. : devAddr
      * @param _wallet Address where collected funds will be forwarded to. : Treasury
      */
     function initAuction(
@@ -98,7 +84,6 @@ contract BatchAuction is ReentrancyGuard, Ownable {
         address _paymentCurrency,
         uint256 _minimumCommitmentAmount,
         uint256 _maximumCommitmentAmount,
-        address _admin,
         address payable _wallet
     ) public {
         require(_startTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
@@ -297,7 +282,7 @@ contract BatchAuction is ReentrancyGuard, Ownable {
         emit AuctionCancelled();
     }
 
-    /// @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
+    // /// @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
     // function withdrawTokens() public  {
     //     withdrawTokens(msg.sender);
     // }
