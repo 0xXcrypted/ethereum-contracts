@@ -482,10 +482,5 @@ contract BatchAuction is ReentrancyGuard, Ownable {
             ERC20(_token).approve(_to, _value);
             ERC20(_token).transferFrom(_from, _to, _value);
         }
-        // require(_token == auctionToken, "BatchAuction: token is not the auction token");
-        // require(_from == address(this), "BatchAuction: transfer from is not the auction contract");
-        // require(_to != address(0), "BatchAuction: transfer to is the zero address");
-        // require(_value > 0, "BatchAuction: transfer value is zero");
-        // _safeTokenPayment(_token, _to, _value);
     }
 }
